@@ -27,5 +27,36 @@ const newCard= new AddCards({
         res.status(404).json({message:error.message})
     }
 }
+const getSpecificCardController=async(req,res)=>{
+    try{
+        const {category}=req.params;
 
-module.exports={addCardController,getCardsController}
+        //find cards with the same catergory name
+        const cards=await AddCards.find({category:category})
+        res.status(200).json(cards)
+    }catch(error){
+        res.status(404).json({message: error.message})
+    }
+}
+const getCategoryCounts=async(req,res)=>{
+    try{
+const categoryCounts=await AddCards.aggregate([
+{
+    $group:{
+        _id: '$category',
+        count: { $sum: 1 }
+    }
+}
+]
+)
+const countsMap = categoryCounts.reduce((acc, curr) => {
+    acc[curr._id] = curr.count;
+    return acc;
+}, {});
+res.status(200).json(countsMap);
+    }catch(error){
+        res.status(500).json({ message: error.message });
+    }
+}
+
+module.exports={addCardController,getCardsController,getSpecificCardController,getCategoryCounts} 
